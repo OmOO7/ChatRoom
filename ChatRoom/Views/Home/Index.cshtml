@@ -1,0 +1,75 @@
+﻿
+@model string
+@{
+    ViewData["Title"] = "Home Page";
+}
+<style>
+body { margin: 0px; padding: 0px; 
+        }
+
+    .msg {
+        position: absolute;
+        top: 10%;
+        color: white;
+        font-size:19px;
+        bottom: 17%;
+        border: 1px solid green;
+        margin-bottom: auto;
+        display: block;
+        background-image: url("https://mir-s3-cdn-cf.behance.net/project_modules/disp/1ce52173426833.5c08f56353039.png");
+        padding: 8px;
+        width: 50%;
+        white-space: nowrap;
+    }
+</style>
+<div class="msg">
+    <div id="msgs"></div>
+</div>
+
+
+<div style="height:0;bottom:0;left:0; display:block;width:100%">
+    <input class="form-control" type="text" style="width:60%;margin-top:48%" id="MessageField" placeholder="type message and press enter" />
+</div>
+
+@section Scripts {
+    <script>
+    $(function () {
+        var userName = '@Model';
+        var protocol = location.protocol === "https:" ? "wss:" : "ws:";
+        var wsUri = protocol + "//" + window.location.host;
+        var socket = new WebSocket(wsUri);
+        socket.onopen = e => {
+            console.log("socket opened", e);
+        };
+        socket.onclose = function (e) {
+            console.log("socket closed", e);
+        };
+        socket.onmessage = function (e) {
+            console.log(e);
+            var res = e.data.split(":");
+            
+            if (res[0] == "Vivek") {
+               // $('#msgs').appendTo("<b>" + e.data + "</b> <br/>");
+                $("<div class='col - lg - 12' align='right'>" + e.data +" </div>").appendTo("#msgs");
+            }
+            else
+                //$('#msgs').append(e.data+"<br/>");
+                $("<div 'class='col - lg - 12' align='left' style='color:black'>" + e.data + " </div>").appendTo("#msgs");
+
+
+        };
+        socket.onerror = function (e) {
+            console.error(e.data);
+        };
+        $('#MessageField').keypress(function (e) {
+            if (e.which != 13) {
+                return;
+            }
+            e.preventDefault();
+            var message = userName + ": " + $('#MessageField').val();
+            socket.send(message);
+            $('#MessageField').val('');
+        });
+    });
+    </script>
+}
